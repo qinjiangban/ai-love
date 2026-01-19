@@ -17,7 +17,7 @@ export default function Home() {
             </div>
 
             <h1 className="max-w-3xl text-4xl font-medium tracking-tight text-zinc-950 sm:text-5xl">
-              情侣八字适配，让建议更清晰、更可执行
+              双方八字适配，让建议更清晰、更可执行
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-zinc-600">
               输入双方出生信息，生成匹配分析、相处建议与 7/30 天行动计划。

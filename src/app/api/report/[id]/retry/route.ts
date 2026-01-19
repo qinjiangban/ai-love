@@ -13,7 +13,7 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
 
   const reportRes = await supabase
     .from('couple_reports')
-    .select('id,status,input')
+    .select('id,status,input,template_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -26,13 +26,22 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
     .update({ status: 'generating', error_message: null })
     .eq('id', id)
 
-  const templateRes = await supabase
-    .from('prompt_templates')
-    .select('model,system_prompt,user_prompt_template')
-    .eq('is_default', true)
-    .maybeSingle()
+  const template = reportRes.data.template_id
+    ? (
+        await supabase
+          .from('prompt_templates')
+          .select('id,model,system_prompt,user_prompt_template')
+          .eq('id', reportRes.data.template_id)
+          .maybeSingle()
+      ).data
+    : (
+        await supabase
+          .from('prompt_templates')
+          .select('id,model,system_prompt,user_prompt_template')
+          .eq('is_default', true)
+          .maybeSingle()
+      ).data
 
-  const template = templateRes.data
   if (!template) {
     await supabase
       .from('couple_reports')
@@ -53,13 +62,20 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
 
     await supabase
       .from('couple_reports')
-      .update({ status: 'succeeded', result, model: template.model, action_plan_state, error_message: null })
+      .update({
+        status: 'succeeded',
+        result,
+        model: template.model,
+        template_id: template.id,
+        action_plan_state,
+        error_message: null,
+      })
       .eq('id', id)
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : '生成失败'
     await supabase
       .from('couple_reports')
-      .update({ status: 'failed', model: template.model, error_message: message.slice(0, 240) })
+      .update({ status: 'failed', model: template.model, template_id: template.id, error_message: message.slice(0, 240) })
       .eq('id', id)
   }
 

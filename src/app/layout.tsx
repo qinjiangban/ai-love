@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '情侣八字适配',
+  title: '两人八字适配',
   description: '输入双方出生信息，生成八字匹配分析、相处建议与行动计划，并支持保存回看。',
 }
 

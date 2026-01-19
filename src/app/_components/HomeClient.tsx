@@ -22,6 +22,13 @@ type ReportListItem = {
   input: CoupleInput
 }
 
+type PromptTemplateOption = {
+  id: string
+  name: string
+  model: string
+  is_default: boolean
+}
+
 function defaultInput(): CoupleInput {
   return {
     personA: { birthDate: '' },
@@ -30,6 +37,7 @@ function defaultInput(): CoupleInput {
 }
 
 const draftKey = 'couple-input-draft:v1'
+const templateKey = 'prompt-template-selected:v1'
 
 export function HomeClient() {
   const router = useRouter()
@@ -40,6 +48,8 @@ export function HomeClient() {
   const [form, setForm] = useState<CoupleInput>(defaultInput())
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [banner, setBanner] = useState<string | null>(null)
+  const [templates, setTemplates] = useState<PromptTemplateOption[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
 
   useEffect(() => {
     const raw = localStorage.getItem(draftKey)
@@ -63,6 +73,16 @@ export function HomeClient() {
       .catch(() => setMe({ user: null }))
   }, [])
 
+  useEffect(() => {
+    const raw = localStorage.getItem(templateKey)
+    if (raw) setSelectedTemplateId(raw)
+  }, [])
+
+  useEffect(() => {
+    if (!selectedTemplateId) return
+    localStorage.setItem(templateKey, selectedTemplateId)
+  }, [selectedTemplateId])
+
   const refreshReports = useCallback(async () => {
     setLoadingReports(true)
     try {
@@ -80,6 +100,24 @@ export function HomeClient() {
   }, [me?.user, refreshReports])
 
   const isAuthed = Boolean(me?.user)
+
+  const refreshTemplates = useCallback(async () => {
+    try {
+      const res = await fetch('/api/prompt-templates', { cache: 'no-store' })
+      if (!res.ok) return
+      const data = await res.json()
+      const list: PromptTemplateOption[] = data.templates ?? []
+      setTemplates(list)
+      if (!selectedTemplateId) {
+        const preferred = list.find((t) => t.is_default) ?? list[0]
+        if (preferred) setSelectedTemplateId(preferred.id)
+      }
+    } catch { }
+  }, [selectedTemplateId])
+
+  useEffect(() => {
+    if (isAuthed) refreshTemplates()
+  }, [isAuthed, refreshTemplates])
 
   const headerTitle = useMemo(() => {
     const a = form.personA.name?.trim() || 'TA'
@@ -130,7 +168,10 @@ export function HomeClient() {
       const res = await fetch('/api/report/create', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ input: form }),
+        body: JSON.stringify({
+          input: form,
+          template_id: selectedTemplateId || undefined,
+        }),
       })
 
       if (!res.ok) {
@@ -352,6 +393,22 @@ export function HomeClient() {
           )}
           生成报告
         </Button>
+        <div className="grid gap-1 sm:min-w-[260px]">
+          <Label htmlFor="model-select">分析模型</Label>
+          <Select
+            id="model-select"
+            value={selectedTemplateId}
+            onChange={(e) => setSelectedTemplateId(e.target.value)}
+            disabled={!isAuthed || templates.length === 0}
+          >
+            {templates.length === 0 ? <option value="">加载中/使用默认模型</option> : null}
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}（{t.model}）
+              </option>
+            ))}
+          </Select>
+        </div>
         <div className="text-sm text-zinc-600">
           {isAuthed ? '生成后会自动保存到“我的报告”。' : '未登录状态无法保存报告。'}
         </div>

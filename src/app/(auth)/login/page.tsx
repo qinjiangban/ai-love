@@ -1,5 +1,5 @@
 import { NavBar } from '@/components/NavBar'
-import { LoginClient } from '@/app/login/LoginClient'
+import { LoginClient } from '@/app/(auth)/login/LoginClient'
 
 export default function LoginPage() {
   return (
