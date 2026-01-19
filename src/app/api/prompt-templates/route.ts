@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getMyProfile } from "@/lib/auth";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -9,14 +10,8 @@ export async function GET() {
     return NextResponse.json({ templates: [] }, { status: 401 });
   }
 
-  const profileRes = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", userData.user.id)
-    .maybeSingle();
-  if (profileRes.error || !profileRes.data) {
-    return NextResponse.json({ templates: [] }, { status: 401 });
-  }
+  const profile = await getMyProfile();
+  if (!profile) return NextResponse.json({ templates: [] }, { status: 401 });
 
   const { data, error } = await supabase
     .from("prompt_templates")
