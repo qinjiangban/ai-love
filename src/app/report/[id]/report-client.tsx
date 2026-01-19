@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { Loader2, RotateCcw } from 'lucide-react'
 
@@ -20,10 +20,8 @@ type ReportDto = {
   created_at: string
 }
 
-export function ReportClient() {
-  const params = useParams<{ id: string }>()
+export function ReportClient({ id }: { id: string }) {
   const router = useRouter()
-  const id = params.id
 
   const [report, setReport] = useState<ReportDto | null>(null)
   const [active, setActive] = useState<'analysis' | 'tips' | 'plan'>('analysis')
