@@ -11,7 +11,7 @@ export async function GET() {
 
   const { data } = await supabase
     .from('couple_reports')
-    .select('id,status,created_at')
+    .select('id,status,created_at,input')
     .order('created_at', { ascending: false })
     .limit(20)
 

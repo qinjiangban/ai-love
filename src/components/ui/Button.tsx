@@ -17,7 +17,7 @@ export function Button(
   } = props
 
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none'
+    'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:opacity-50'
 
   const variants: Record<typeof variant, string> = {
     primary: 'bg-zinc-900 text-white hover:bg-zinc-800',
@@ -41,4 +41,3 @@ export function Button(
     />
   )
 }
-

@@ -43,15 +43,23 @@ export async function POST(_: NextRequest, { params }: { params: Promise<{ id: s
 
   try {
     const result = await generateCoupleReport({ input: reportRes.data.input, template })
+
+    const total7 = result.actionPlan.days7.reduce((acc, d) => acc + d.tasks.length, 0)
+    const total30 = result.actionPlan.days30.reduce((acc, w) => acc + w.goals.length, 0)
+    const action_plan_state = {
+      days7: new Array(total7).fill(false),
+      days30: new Array(total30).fill(false),
+    }
+
     await supabase
       .from('couple_reports')
-      .update({ status: 'succeeded', result, error_message: null })
+      .update({ status: 'succeeded', result, model: template.model, action_plan_state, error_message: null })
       .eq('id', id)
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : '生成失败'
     await supabase
       .from('couple_reports')
-      .update({ status: 'failed', error_message: message.slice(0, 240) })
+      .update({ status: 'failed', model: template.model, error_message: message.slice(0, 240) })
       .eq('id', id)
   }
 

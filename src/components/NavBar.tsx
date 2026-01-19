@@ -2,9 +2,18 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { LogIn, LogOut, Shield, Sparkles } from 'lucide-react'
+import { LogIn, LogOut, Sparkles, Shield } from 'lucide-react'
 
+import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/DropdownMenu'
 import { cn } from '@/lib/utils/cn'
 
 type MeResponse = {
@@ -45,6 +54,15 @@ export function NavBar(props: { className?: string }) {
     }
   }
 
+  const avatarText = useMemo(() => {
+    const email = me?.user?.email?.trim() ?? ''
+    if (!email) return 'U'
+    const s = email.split('@')[0] ?? email
+    const first = s[0] ?? 'U'
+    const second = s[1] ?? ''
+    return (first + second).toUpperCase()
+  }, [me?.user?.email])
+
   return (
     <div
       className={cn(
@@ -54,11 +72,16 @@ export function NavBar(props: { className?: string }) {
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white">
-            <Sparkles className="h-5 w-5" />
-          </div>
+
+          <div
+            role="img"
+            aria-label="logo"
+            className="h-12 w-12 bg-contain bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url(/favicon.ico)' }}
+          />
+
           <div className="flex flex-col">
-            <div className="text-sm font-semibold text-zinc-900">情侣八字适配</div>
+            <div className="text-sm font-semibold text-zinc-900">Ai Love</div>
             <div className="text-xs text-zinc-500">分析 · 建议 · 行动计划</div>
           </div>
         </Link>
@@ -74,25 +97,51 @@ export function NavBar(props: { className?: string }) {
           ) : null}
 
           {me?.user ? (
-            <div className="flex items-center gap-2">
-              <div className="hidden max-w-[260px] truncate text-sm text-zinc-600 sm:block">
-                {me.user.email}
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={logout}
-                disabled={loading}
-              >
-                <LogOut className="h-4 w-4" />
-                退出
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-10 w-10 rounded-full p-0"
+                  aria-label="用户菜单"
+                >
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback>{avatarText}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="grid gap-1">
+                    <div className="text-sm font-medium text-zinc-900">已登录</div>
+                    <div className="truncate text-xs text-zinc-500">{me.user.email}</div>
+                  </div>
+                </DropdownMenuLabel>
+{/*                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/analyze">
+                    <Sparkles className="h-4 w-4" />
+                    开始生成报告
+                  </Link>
+                </DropdownMenuItem> */}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    void logout()
+                  }}
+                  disabled={loading}
+                >
+                  <LogOut className="h-4 w-4" />
+                  退出登录
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link href="/login">
               <Button variant="primary" size="sm">
                 <LogIn className="h-4 w-4" />
-                邮箱登录
+                登录
               </Button>
             </Link>
           )}
@@ -101,4 +150,3 @@ export function NavBar(props: { className?: string }) {
     </div>
   )
 }
-

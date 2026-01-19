@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { Loader2, Lock, Mail } from 'lucide-react'
 
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
 
 export function LoginClient() {
   const router = useRouter()
@@ -64,8 +66,10 @@ export function LoginClient() {
   return (
     <div className="mx-auto grid max-w-md gap-6">
       <div className="grid gap-2">
-        <div className="text-2xl font-semibold text-white">邮箱登录</div>
-        <div className="text-sm leading-6 text-zinc-300">使用邮箱与密码登录/注册，登录后可保存与回看报告。</div>
+        <div className="text-2xl font-semibold text-zinc-950">邮箱登录</div>
+        <div className="text-sm leading-6 text-zinc-600">
+          使用邮箱与密码登录/注册，登录后可保存与回看报告。
+        </div>
       </div>
 
       <Card className="p-6">
@@ -96,8 +100,9 @@ export function LoginClient() {
           </div>
 
           <div className="grid gap-2">
-            <div className="text-xs text-zinc-600">邮箱</div>
+            <Label htmlFor="login-email">邮箱</Label>
             <Input
+              id="login-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -107,8 +112,9 @@ export function LoginClient() {
           </div>
 
           <div className="grid gap-2">
-            <div className="text-xs text-zinc-600">密码</div>
+            <Label htmlFor="login-password">密码</Label>
             <Input
+              id="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="至少 8 位"
@@ -119,8 +125,9 @@ export function LoginClient() {
 
           {mode === 'signUp' ? (
             <div className="grid gap-2">
-              <div className="text-xs text-zinc-600">确认密码</div>
+              <Label htmlFor="login-confirm-password">确认密码</Label>
               <Input
+                id="login-confirm-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="再次输入密码"
@@ -135,21 +142,13 @@ export function LoginClient() {
             {mode === 'signIn' ? '登录' : '注册'}
           </Button>
 
-          {info ? (
-            <div className="rounded-xl border border-emerald-300/50 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-              {info}
-            </div>
-          ) : null}
+          {info ? <Alert variant="success">{info}</Alert> : null}
 
-          {error ? (
-            <div className="rounded-xl border border-rose-300/50 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-              {error}
-            </div>
-          ) : null}
+          {error ? <Alert variant="destructive">{error}</Alert> : null}
         </div>
       </Card>
 
-      <div className="text-xs leading-5 text-zinc-400">
+      <div className="text-xs leading-5 text-zinc-500">
         继续即表示你理解：本服务仅供参考，不构成任何专业建议。
       </div>
     </div>

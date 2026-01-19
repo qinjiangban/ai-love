@@ -12,7 +12,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
   const { data, error } = await supabase
     .from('couple_reports')
-    .select('id,status,input,result,error_message,created_at')
+    .select('id,status,input,result,error_message,created_at,model,action_plan_state')
     .eq('id', id)
     .maybeSingle()
 
