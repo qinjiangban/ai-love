@@ -16,8 +16,8 @@ export async function GET() {
   const { data, error } = await supabase
     .from("prompt_templates")
     .select("id,name,model,is_default")
-    .order("is_default", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order('is_default', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     return NextResponse.json({ error: "加载模型列表失败" }, { status: 500 });

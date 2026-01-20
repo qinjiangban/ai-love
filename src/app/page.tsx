@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-50 [background-image:radial-gradient(800px_circle_at_25%_0%,rgba(15,23,42,0.06),transparent_55%),radial-gradient(800px_circle_at_80%_-10%,rgba(16,185,129,0.10),transparent_55%)]">
+    <div className="min-h-screen bg-zinc-50 bg-[radial-gradient(800px_circle_at_25%_0%,rgba(15,23,42,0.06),transparent_55%),radial-gradient(800px_circle_at_80%_-10%,rgba(16,185,129,0.10),transparent_55%)]">
       <NavBar />
       <main className="mx-auto w-full max-w-5xl px-4 pb-14 pt-12">
         <section className="grid gap-8">

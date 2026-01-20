@@ -11,6 +11,7 @@ const personSchema = z.object({
 export const coupleInputSchema = z.object({
   personA: personSchema,
   personB: personSchema,
+  question: z.string().max(500).optional(),
 })
 
 export type CoupleInput = z.infer<typeof coupleInputSchema>
@@ -18,6 +19,7 @@ export type CoupleInput = z.infer<typeof coupleInputSchema>
 export const reportResultSchema = z.object({
   title: z.string().min(3).max(60),
   overview: z.string().min(20),
+  userQuestionAnalysis: z.string().min(20).optional().describe('AI对用户提出问题的回答，如果没有问题则不返回'),
   scores: z.object({
     communication: z.number().int().min(0).max(100),
     conflict: z.number().int().min(0).max(100),

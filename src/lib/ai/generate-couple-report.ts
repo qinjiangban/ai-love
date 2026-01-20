@@ -1,5 +1,6 @@
 import { generateObject, gateway } from 'ai'
 
+import { calculateBazi } from '@/lib/bazi/calculator'
 import { serverEnv } from '@/lib/env/server'
 import { reportResultSchema, type CoupleInput } from '@/lib/validation'
 
@@ -10,7 +11,20 @@ export type PromptTemplate = {
 }
 
 function renderUserPrompt(template: string, input: CoupleInput) {
-  const inputJson = JSON.stringify(input, null, 2)
+  // 1. 计算八字排盘
+  const baziA = calculateBazi(input.personA.birthDate, input.personA.birthTime)
+  const baziB = calculateBazi(input.personB.birthDate, input.personB.birthTime)
+
+  // 2. 构造增强的输入数据
+  const enrichedInput = {
+    ...input,
+    analysisData: {
+      personA: baziA,
+      personB: baziB,
+    }
+  }
+
+  const inputJson = JSON.stringify(enrichedInput, null, 2)
   return template.replaceAll('{{input_json}}', inputJson)
 }
 

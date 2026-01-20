@@ -40,11 +40,13 @@ function normalizeActionPlanState(raw: unknown): ActionPlanState {
   }
 }
 
+import { ReportChat } from '@/components/ReportChat'
+
 export function ReportClient({ id }: { id: string }) {
   const router = useRouter()
 
   const [report, setReport] = useState<ReportDto | null>(null)
-  const [active, setActive] = useState<'analysis' | 'tips' | 'plan'>('analysis')
+  const [active, setActive] = useState<'analysis' | 'tips' | 'plan' | 'question'>('analysis')
   const [error, setError] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
   const [planState, setPlanState] = useState<ActionPlanState>({ days7: [], days30: [] })
@@ -142,6 +144,21 @@ export function ReportClient({ id }: { id: string }) {
     )
   }
 
+  if (report?.status === 'queued' || report?.status === 'generating') {
+    return (
+      <Card className="flex flex-col items-center justify-center p-12 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        </div>
+        <h2 className="text-xl font-semibold text-zinc-900">报告正在生成中...</h2>
+        <p className="mt-2 text-sm text-zinc-600">
+          请稍候，AI 正在分析你们的八字与关系能量。<br />
+          通常需要 30-60 秒，完成后页面会自动刷新。
+        </p>
+      </Card>
+    )
+  }
+
   if (!report) {
     return (
       <div className="grid gap-6 lg:grid-cols-12">
@@ -228,7 +245,7 @@ export function ReportClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {report.status === 'generating' || report.status === 'queued' ? (
+      {(report.status as string) === 'generating' || (report.status as string) === 'queued' ? (
         <Alert>
           <div className="grid gap-2">
             <div className="text-sm font-medium text-zinc-900">正在生成报告</div>
@@ -250,92 +267,109 @@ export function ReportClient({ id }: { id: string }) {
       ) : null}
 
       {report.status === 'succeeded' && report.result ? (
-        <div className="grid gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8">
-            <Card className="p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="grid gap-1">
-                  <div className="text-sm font-semibold text-zinc-900">概览</div>
-                  <div className="text-sm leading-6 text-zinc-700">{report.result.overview}</div>
-                </div>
-                {report.model ? (
-                  <div className="text-xs text-zinc-500">模型：{report.model}</div>
-                ) : null}
-              </div>
-
-              <Separator className="my-6" />
-
-              <Tabs value={active} onValueChange={(v) => setActive(v as typeof active)}>
-                <TabsList>
-                  <TabsTrigger value="analysis">分析</TabsTrigger>
-                  <TabsTrigger value="tips">建议</TabsTrigger>
-                  <TabsTrigger value="plan">行动计划</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="analysis">
-                  <div className="grid gap-4">
-                    {report.result.baziAnalysis.map((b) => (
-                      <div
-                        key={b.title}
-                        className="rounded-2xl border border-zinc-200 bg-white p-4"
-                      >
-                        <div className="text-sm font-semibold text-zinc-900">{b.title}</div>
-                        <div className="mt-2 text-sm leading-6 text-zinc-700">{b.content}</div>
-                      </div>
-                    ))}
+        <>
+          <ReportChat reportId={id} />
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <Card className="p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="grid gap-1">
+                    <div className="text-sm font-semibold text-zinc-900">概览</div>
+                    <div className="text-sm leading-6 text-zinc-700">{report.result.overview}</div>
                   </div>
-                </TabsContent>
+                  {report.model ? (
+                    <div className="text-xs text-zinc-500">模型：{report.model}</div>
+                  ) : null}
+                </div>
 
-                <TabsContent value="tips">
-                  <div className="grid gap-4">
-                    {report.result.gettingAlongTips.map((t) => (
-                      <div
-                        key={t.title}
-                        className="rounded-2xl border border-zinc-200 bg-white p-4"
-                      >
-                        <div className="text-sm font-semibold text-zinc-900">{t.title}</div>
-                        <div className="mt-3 grid gap-2">
-                          {t.tips.map((tip) => (
-                            <div key={tip} className="flex gap-2 text-sm text-zinc-700">
-                              <div className="mt-2 h-1 w-1 rounded-full bg-zinc-400" />
-                              <div className="leading-6">{tip}</div>
-                            </div>
-                          ))}
+                <Separator className="my-6" />
+
+                <Tabs value={active} onValueChange={(v) => setActive(v as typeof active)}>
+                  <TabsList>
+                    <TabsTrigger value="analysis">分析</TabsTrigger>
+                    <TabsTrigger value="tips">建议</TabsTrigger>
+                    <TabsTrigger value="plan">行动计划</TabsTrigger>
+                    {report.result.userQuestionAnalysis ? (
+                      <TabsTrigger value="question">你的提问</TabsTrigger>
+                    ) : null}
+                  </TabsList>
+
+                  <TabsContent value="analysis">
+                    <div className="grid gap-4">
+                      {report.result.baziAnalysis.map((b) => (
+                        <div
+                          key={b.title}
+                          className="rounded-2xl border border-zinc-200 bg-white p-4"
+                        >
+                          <div className="text-sm font-semibold text-zinc-900">{b.title}</div>
+                          <div className="mt-2 text-sm leading-6 text-zinc-700">{b.content}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="tips">
+                    <div className="grid gap-4">
+                      {report.result.gettingAlongTips.map((t) => (
+                        <div
+                          key={t.title}
+                          className="rounded-2xl border border-zinc-200 bg-white p-4"
+                        >
+                          <div className="text-sm font-semibold text-zinc-900">{t.title}</div>
+                          <div className="mt-3 grid gap-2">
+                            {t.tips.map((tip) => (
+                              <div key={tip} className="flex gap-2 text-sm text-zinc-700">
+                                <div className="mt-2 h-1 w-1 rounded-full bg-zinc-400" />
+                                <div className="leading-6">{tip}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="plan">
+                    <ActionPlan
+                      days7={report.result.actionPlan.days7}
+                      days30={report.result.actionPlan.days30}
+                      state={planState}
+                      onToggle={toggleTodo}
+                    />
+                  </TabsContent>
+
+                  {report.result.userQuestionAnalysis ? (
+                    <TabsContent value="question">
+                      <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+                        <div className="text-sm font-semibold text-zinc-900">AI 回答</div>
+                        <div className="mt-2 text-sm leading-6 text-zinc-700 whitespace-pre-wrap">
+                          {report.result.userQuestionAnalysis}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </TabsContent>
+                    </TabsContent>
+                  ) : null}
+                </Tabs>
+              </Card>
+            </div>
 
-                <TabsContent value="plan">
-                  <ActionPlan
-                    days7={report.result.actionPlan.days7}
-                    days30={report.result.actionPlan.days30}
-                    state={planState}
-                    onToggle={toggleTodo}
-                  />
-                </TabsContent>
-              </Tabs>
-            </Card>
+            <div className="lg:col-span-4">
+              <Card className="p-6">
+                <div className="text-sm font-semibold text-zinc-900">匹配刻度</div>
+                <div className="mt-4">
+                  <ScoreBars scores={report.result.scores} />
+                </div>
+
+                <Separator className="my-6" />
+
+                <div className="text-xs leading-5 text-zinc-500">
+                  {report.result.disclaimers.map((d) => (
+                    <div key={d}>{d}</div>
+                  ))}
+                </div>
+              </Card>
+            </div>
           </div>
-
-          <div className="lg:col-span-4">
-            <Card className="p-6">
-              <div className="text-sm font-semibold text-zinc-900">匹配刻度</div>
-              <div className="mt-4">
-                <ScoreBars scores={report.result.scores} />
-              </div>
-
-              <Separator className="my-6" />
-
-              <div className="text-xs leading-5 text-zinc-500">
-                {report.result.disclaimers.map((d) => (
-                  <div key={d}>{d}</div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
+        </>
       ) : null}
     </div>
   )

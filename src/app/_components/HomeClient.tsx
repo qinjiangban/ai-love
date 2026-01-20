@@ -15,6 +15,8 @@ import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { coupleInputSchema, type CoupleInput } from '@/lib/validation'
 
+import { Textarea } from '@/components/ui/Textarea'
+
 type ReportListItem = {
   id: string
   status: 'queued' | 'generating' | 'succeeded' | 'failed'
@@ -120,8 +122,8 @@ export function HomeClient() {
   }, [isAuthed, refreshTemplates])
 
   const headerTitle = useMemo(() => {
-    const a = form.personA.name?.trim() || 'TA'
-    const b = form.personB.name?.trim() || '对方'
+    const a = form.personA.name?.trim() || '你'
+    const b = form.personB.name?.trim() || 'ta'
     return `${a} × ${b}`
   }, [form.personA.name, form.personB.name])
 
@@ -202,189 +204,207 @@ export function HomeClient() {
 
       {banner ? <Alert variant="destructive">{banner}</Alert> : null}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold text-zinc-900">你</div>
+              <div className="text-xs text-zinc-500">出生日期必填</div>
+            </div>
+
+            <div className="mt-4 grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="personA-name">称呼</Label>
+                <Input
+                  id="personA-name"
+                  value={form.personA.name ?? ''}
+                  onChange={(e) => setField('personA', 'name', e.target.value)}
+                  placeholder="比如：小明"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="personA-birthDate">出生日期</Label>
+                  <Input
+                    id="personA-birthDate"
+                    type="date"
+                    value={form.personA.birthDate}
+                    onChange={(e) => setField('personA', 'birthDate', e.target.value)}
+                    error={errors['personA.birthDate']}
+                    aria-invalid={Boolean(errors['personA.birthDate'])}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="personA-birthTime">出生时间（可选）</Label>
+                  <Input
+                    id="personA-birthTime"
+                    type="time"
+                    value={form.personA.birthTime ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personA',
+                        'birthTime',
+                        e.target.value ? e.target.value : undefined
+                      )
+                    }
+                    error={errors['personA.birthTime']}
+                    aria-invalid={Boolean(errors['personA.birthTime'])}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="personA-gender">性别（可选）</Label>
+                  <Select
+                    id="personA-gender"
+                    value={form.personA.gender ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personA',
+                        'gender',
+                        (e.target.value
+                          ? (e.target.value as CoupleInput['personA']['gender'])
+                          : undefined)
+                      )
+                    }
+                    aria-invalid={Boolean(errors['personA.gender'])}
+                  >
+                    <option value="">不填写</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                    <option value="other">其他</option>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="personA-birthPlace">出生地（可选）</Label>
+                  <Input
+                    id="personA-birthPlace"
+                    value={form.personA.birthPlace ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personA',
+                        'birthPlace',
+                        e.target.value ? e.target.value : undefined
+                      )
+                    }
+                    placeholder="比如：杭州"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold text-zinc-900">对方</div>
+              <div className="text-xs text-zinc-500">出生日期必填</div>
+            </div>
+
+            <div className="mt-4 grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="personB-name">称呼</Label>
+                <Input
+                  id="personB-name"
+                  value={form.personB.name ?? ''}
+                  onChange={(e) => setField('personB', 'name', e.target.value)}
+                  placeholder="比如：小红"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="personB-birthDate">出生日期</Label>
+                  <Input
+                    id="personB-birthDate"
+                    type="date"
+                    value={form.personB.birthDate}
+                    onChange={(e) => setField('personB', 'birthDate', e.target.value)}
+                    error={errors['personB.birthDate']}
+                    aria-invalid={Boolean(errors['personB.birthDate'])}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="personB-birthTime">出生时间（可选）</Label>
+                  <Input
+                    id="personB-birthTime"
+                    type="time"
+                    value={form.personB.birthTime ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personB',
+                        'birthTime',
+                        e.target.value ? e.target.value : undefined
+                      )
+                    }
+                    error={errors['personB.birthTime']}
+                    aria-invalid={Boolean(errors['personB.birthTime'])}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="personB-gender">性别（可选）</Label>
+                  <Select
+                    id="personB-gender"
+                    value={form.personB.gender ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personB',
+                        'gender',
+                        (e.target.value
+                          ? (e.target.value as CoupleInput['personA']['gender'])
+                          : undefined)
+                      )
+                    }
+                    aria-invalid={Boolean(errors['personB.gender'])}
+                  >
+                    <option value="">不填写</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                    <option value="other">其他</option>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="personB-birthPlace">出生地（可选）</Label>
+                  <Input
+                    id="personB-birthPlace"
+                    value={form.personB.birthPlace ?? ''}
+                    onChange={(e) =>
+                      setField(
+                        'personB',
+                        'birthPlace',
+                        e.target.value ? e.target.value : undefined
+                      )
+                    }
+                    placeholder="比如：上海"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
         <Card className="p-6">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-zinc-900">你</div>
-            <div className="text-xs text-zinc-500">出生日期必填</div>
+            <div className="text-sm font-semibold text-zinc-900">想问的问题（可选）</div>
           </div>
-
-          <div className="mt-4 grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="personA-name">称呼</Label>
-              <Input
-                id="personA-name"
-                value={form.personA.name ?? ''}
-                onChange={(e) => setField('personA', 'name', e.target.value)}
-                placeholder="比如：小明"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="personA-birthDate">出生日期</Label>
-                <Input
-                  id="personA-birthDate"
-                  type="date"
-                  value={form.personA.birthDate}
-                  onChange={(e) => setField('personA', 'birthDate', e.target.value)}
-                  error={errors['personA.birthDate']}
-                  aria-invalid={Boolean(errors['personA.birthDate'])}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="personA-birthTime">出生时间（可选）</Label>
-                <Input
-                  id="personA-birthTime"
-                  type="time"
-                  value={form.personA.birthTime ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personA',
-                      'birthTime',
-                      e.target.value ? e.target.value : undefined
-                    )
-                  }
-                  error={errors['personA.birthTime']}
-                  aria-invalid={Boolean(errors['personA.birthTime'])}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="personA-gender">性别（可选）</Label>
-                <Select
-                  id="personA-gender"
-                  value={form.personA.gender ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personA',
-                      'gender',
-                      (e.target.value
-                        ? (e.target.value as CoupleInput['personA']['gender'])
-                        : undefined)
-                    )
-                  }
-                  aria-invalid={Boolean(errors['personA.gender'])}
-                >
-                  <option value="">不填写</option>
-                  <option value="male">男</option>
-                  <option value="female">女</option>
-                  <option value="other">其他</option>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="personA-birthPlace">出生地（可选）</Label>
-                <Input
-                  id="personA-birthPlace"
-                  value={form.personA.birthPlace ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personA',
-                      'birthPlace',
-                      e.target.value ? e.target.value : undefined
-                    )
-                  }
-                  placeholder="比如：杭州"
-                />
-              </div>
+          <div className="mt-4">
+            <Textarea
+              value={form.question ?? ''}
+              onChange={(e) => setForm((s) => ({ ...s, question: e.target.value }))}
+              placeholder="例如：我们经常因为小事吵架，不知道如何沟通；或者，我想知道我们未来适合在哪个城市发展..."
+              className="h-24 resize-none"
+              maxLength={500}
+            />
+            <div className="mt-2 text-xs text-zinc-500 text-right">
+              {(form.question?.length ?? 0)}/500
             </div>
           </div>
         </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-zinc-900">对方</div>
-            <div className="text-xs text-zinc-500">出生日期必填</div>
-          </div>
-
-          <div className="mt-4 grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="personB-name">称呼</Label>
-              <Input
-                id="personB-name"
-                value={form.personB.name ?? ''}
-                onChange={(e) => setField('personB', 'name', e.target.value)}
-                placeholder="比如：小红"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="personB-birthDate">出生日期</Label>
-                <Input
-                  id="personB-birthDate"
-                  type="date"
-                  value={form.personB.birthDate}
-                  onChange={(e) => setField('personB', 'birthDate', e.target.value)}
-                  error={errors['personB.birthDate']}
-                  aria-invalid={Boolean(errors['personB.birthDate'])}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="personB-birthTime">出生时间（可选）</Label>
-                <Input
-                  id="personB-birthTime"
-                  type="time"
-                  value={form.personB.birthTime ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personB',
-                      'birthTime',
-                      e.target.value ? e.target.value : undefined
-                    )
-                  }
-                  error={errors['personB.birthTime']}
-                  aria-invalid={Boolean(errors['personB.birthTime'])}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="personB-gender">性别（可选）</Label>
-                <Select
-                  id="personB-gender"
-                  value={form.personB.gender ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personB',
-                      'gender',
-                      (e.target.value
-                        ? (e.target.value as CoupleInput['personA']['gender'])
-                        : undefined)
-                    )
-                  }
-                  aria-invalid={Boolean(errors['personB.gender'])}
-                >
-                  <option value="">不填写</option>
-                  <option value="male">男</option>
-                  <option value="female">女</option>
-                  <option value="other">其他</option>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="personB-birthPlace">出生地（可选）</Label>
-                <Input
-                  id="personB-birthPlace"
-                  value={form.personB.birthPlace ?? ''}
-                  onChange={(e) =>
-                    setField(
-                      'personB',
-                      'birthPlace',
-                      e.target.value ? e.target.value : undefined
-                    )
-                  }
-                  placeholder="比如：上海"
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+      </div>   <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <Button className="sm:w-auto" size="lg" onClick={submit} disabled={submitting}>
           {submitting ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -394,7 +414,6 @@ export function HomeClient() {
           生成报告
         </Button>
         <div className="grid gap-1 sm:min-w-[260px]">
-          <Label htmlFor="model-select">分析模型</Label>
           <Select
             id="model-select"
             value={selectedTemplateId}
