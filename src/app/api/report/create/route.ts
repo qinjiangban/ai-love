@@ -70,48 +70,52 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: created.data.id });
   }
 
-  try {
-    const result = await generateCoupleReport({
-      input: parsed.data.input,
-      template,
-    });
+  // 异步执行生成，不阻塞请求返回
+  (async () => {
+    try {
+      const result = await generateCoupleReport({
+        input: parsed.data.input,
+        template,
+      });
 
-    const total7 = result.actionPlan.days7.reduce(
-      (acc, d) => acc + d.tasks.length,
-      0,
-    );
-    const total30 = result.actionPlan.days30.reduce(
-      (acc, w) => acc + w.goals.length,
-      0,
-    );
-    const action_plan_state = {
-      days7: new Array(total7).fill(false),
-      days30: new Array(total30).fill(false),
-    };
+      const total7 = result.actionPlan.days7.reduce(
+        (acc, d) => acc + d.tasks.length,
+        0,
+      );
+      const total30 = result.actionPlan.days30.reduce(
+        (acc, w) => acc + w.goals.length,
+        0,
+      );
+      const action_plan_state = {
+        days7: new Array(total7).fill(false),
+        days30: new Array(total30).fill(false),
+      };
 
-    await supabase
-      .from("couple_reports")
-      .update({
-        status: "succeeded",
-        result,
-        model: template.model,
-        template_id: template.id,
-        action_plan_state,
-        error_message: null,
-      })
-      .eq("id", created.data.id);
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "生成失败";
-    await supabase
-      .from("couple_reports")
-      .update({
-        status: "failed",
-        model: template.model,
-        template_id: template.id,
-        error_message: message.slice(0, 240),
-      })
-      .eq("id", created.data.id);
-  }
+      await supabase
+        .from("couple_reports")
+        .update({
+          status: "succeeded",
+          result,
+          model: template.model,
+          template_id: template.id,
+          action_plan_state,
+          error_message: null,
+        })
+        .eq("id", created.data.id);
+    } catch (e: unknown) {
+      console.error('Report generation failed:', e)
+      const message = e instanceof Error ? e.message : "生成失败";
+      await supabase
+        .from("couple_reports")
+        .update({
+          status: "failed",
+          model: template.model,
+          template_id: template.id,
+          error_message: message.slice(0, 240),
+        })
+        .eq("id", created.data.id);
+    }
+  })();
 
   return NextResponse.json({ id: created.data.id });
 }
